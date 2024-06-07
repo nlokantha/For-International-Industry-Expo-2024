@@ -24,6 +24,13 @@ public class MainActivity extends BaseActivity {
                 startActivity(intent);
             }
         });
+        binding.buttonMyOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MyOrderActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void initBanner() {
