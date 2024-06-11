@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.e_payment.Adapter.DeviceAdapter;
 import com.example.e_payment.databinding.ActivityCartBinding;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -33,6 +35,8 @@ public class CartActivity extends BaseActivity {
     ActivityCartBinding binding;
     BluetoothAdapter bluetoothAdapter;
     BluetoothDevice mDevice;
+
+    String bluetooth;
     UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
@@ -45,6 +49,12 @@ public class CartActivity extends BaseActivity {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "Device doesn't support Bluetooth", Toast.LENGTH_SHORT).show();
+        }
+
+        if (getIntent() != null && getIntent().getStringExtra("device") != null){
+            bluetooth = getIntent().getStringExtra("device");
+            Toast.makeText(this, bluetooth, Toast.LENGTH_SHORT).show();
+            ConnectWithDevice(bluetooth);
         }
 
         binding.buttonPay.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +105,7 @@ public class CartActivity extends BaseActivity {
             buttonClose.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    finish();
+                    SendToBoard(textView.getText().toString());
                     alert.dismiss();
                 }
             });
@@ -104,8 +114,8 @@ public class CartActivity extends BaseActivity {
         }
     });
 
-    public void ConnectWithDevice(BluetoothDevice device) {
-        mDevice = bluetoothAdapter.getRemoteDevice(device.getAddress());
+    public void ConnectWithDevice(String device) {
+        mDevice = bluetoothAdapter.getRemoteDevice(device);
         try {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 return;
@@ -136,4 +146,7 @@ public class CartActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
+
+
+
 }
