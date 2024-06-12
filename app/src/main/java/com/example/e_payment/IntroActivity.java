@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -32,7 +33,7 @@ public class IntroActivity extends BaseActivity {
                 Intent intent = new Intent(IntroActivity.this, MainActivity.class);
                 startActivity(intent);
             } else {
-
+                Toast.makeText(IntroActivity.this, "Bluetooth enabling failed", Toast.LENGTH_SHORT).show();
             }
         }
     });
@@ -95,5 +96,25 @@ public class IntroActivity extends BaseActivity {
             Intent intent = new Intent(IntroActivity.this, MainActivity.class);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_BLUETOOTH_PERMISSION) {
+            if (grantResults.length > 0 && allPermissionsGranted(grantResults)) {
+                startBluetooth();
+            } else {
+                Toast.makeText(this, "Bluetooth permissions are required", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    private boolean allPermissionsGranted(int[] grantResults) {
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -53,8 +53,8 @@ public class CartActivity extends BaseActivity {
 
         if (getIntent() != null && getIntent().getStringExtra("device") != null){
             bluetooth = getIntent().getStringExtra("device");
-            Toast.makeText(this, bluetooth, Toast.LENGTH_SHORT).show();
-            ConnectWithDevice(bluetooth);
+//            Toast.makeText(this, bluetooth, Toast.LENGTH_SHORT).show();
+            ConnectWithDevice(getIntent().getStringExtra("device"));
         }
 
         binding.buttonPay.setOnClickListener(new View.OnClickListener() {
@@ -74,7 +74,7 @@ public class CartActivity extends BaseActivity {
             public void onClick(View v) {
                 String coupon = binding.editTextCoupon.getText().toString();
                 binding.textViewSubTotal.setText("$" + coupon);
-                binding.textViewTotal.setText("$" + coupon);
+                binding.textViewTotal.setText(coupon);
             }
         });
     }
@@ -114,23 +114,67 @@ public class CartActivity extends BaseActivity {
         }
     });
 
+//    public void ConnectWithDevice(String device) {
+//        mDevice = bluetoothAdapter.getRemoteDevice(device);
+//        try {
+//            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+//                return;
+//            }
+//            mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
+//            mSocket.connect();
+//            if (mSocket.isConnected()){
+//                Toast.makeText(this, "Connected !!!!", Toast.LENGTH_SHORT).show();
+//                mOutputStream = mSocket.getOutputStream();
+//            }else {
+//                Toast.makeText(this, "Not Connect !!!!", Toast.LENGTH_SHORT).show();
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+    @SuppressLint("MissingPermission")
     public void ConnectWithDevice(String device) {
-        mDevice = bluetoothAdapter.getRemoteDevice(device);
-        try {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mDevice = bluetoothAdapter.getRemoteDevice(device);
+                    mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
+                    bluetoothAdapter.cancelDiscovery();
+                    mSocket.connect();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mSocket.isConnected()) {
+                                Toast.makeText(CartActivity.this, "Connected !!!!", Toast.LENGTH_SHORT).show();
+                                try {
+                                    mOutputStream = mSocket.getOutputStream();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                Toast.makeText(CartActivity.this, "Not Connected !!!!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(CartActivity.this, "Connection Failed !!!!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    try {
+                        if (mSocket != null) {
+                            mSocket.close();
+                        }
+                    } catch (IOException closeException) {
+                        closeException.printStackTrace();
+                    }
+                }
             }
-            mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
-            mSocket.connect();
-            if (mSocket.isConnected()){
-                Toast.makeText(this, "Connected !!!!", Toast.LENGTH_SHORT).show();
-                mOutputStream = mSocket.getOutputStream();
-            }else {
-                Toast.makeText(this, "Not Connect !!!!", Toast.LENGTH_SHORT).show();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        }).start();
     }
 
     public void SendToBoard(String msg){
@@ -138,7 +182,7 @@ public class CartActivity extends BaseActivity {
             if (mOutputStream != null) {
                 mOutputStream.write(msg.getBytes());
                 mOutputStream.flush();
-                Toast.makeText(this, "Data sent over Bluetooth", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Data sent over Bluetooth", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Bluetooth output stream not available", Toast.LENGTH_SHORT).show();
             }
