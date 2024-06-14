@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,16 +31,21 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CartActivity extends BaseActivity {
     ActivityCartBinding binding;
     BluetoothAdapter bluetoothAdapter;
     BluetoothDevice mDevice;
+    private static final String TAG = "demo";
 
-    String bluetooth;
+    String bluetooth,shopName;
     UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
+
+    private static final int REQUEST_BLUETOOTH_PERMISSION = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +60,38 @@ public class CartActivity extends BaseActivity {
         if (getIntent() != null && getIntent().getStringExtra("device") != null){
             bluetooth = getIntent().getStringExtra("device");
 //            Toast.makeText(this, bluetooth, Toast.LENGTH_SHORT).show();
-            ConnectWithDevice(getIntent().getStringExtra("device"));
+            Log.d(TAG, "onCreate: "+bluetooth);
+//            ConnectWithDevice(getIntent().getStringExtra("device"));
         }
+        binding.buttonScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scanCode();
+            }
+        });
 
         binding.buttonPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                scanCode();
+                String total = binding.editTextCoupon.getText().toString();
+                if (!total.isEmpty()){
+                    SendToBoard(total);
+                }
+                binding.textViewShopName.setText("N/A");
+                binding.textViewTotal.setText("$0");
+                binding.textViewSubtotal.setText("$0");
+                binding.textView10.setText("$0");
+                binding.textView12.setText("$0");
+                try {
+                    if (mSocket != null) {
+                        mSocket.close();
+                    }
+                } catch (IOException closeException) {
+                    closeException.printStackTrace();
+                }
+
+
+
             }
         });
         binding.imageViewBack.setOnClickListener(new View.OnClickListener() {
@@ -73,8 +104,8 @@ public class CartActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 String coupon = binding.editTextCoupon.getText().toString();
-                binding.textViewSubTotal.setText("$" + coupon);
-                binding.textViewTotal.setText(coupon);
+                binding.textViewSubtotal.setText("$" + coupon);
+                binding.textViewTotal.setText("$" + coupon);
             }
         });
     }
@@ -88,30 +119,31 @@ public class CartActivity extends BaseActivity {
     }
 
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), result -> {
-        if (result.getContents() != null && result.getContents().equals("C3 Shopping Store")) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setCancelable(false);
-            LayoutInflater inflater = this.getLayoutInflater();
-            View alertDialog = inflater.inflate(R.layout.custom_complete_dialog, null);
-            builder.setView(alertDialog);
+            String inputString = result.getContents().toString();
+            String macAddress = extractMACAddress(inputString);
+        Log.d(TAG, "fgfgfg:"+macAddress);
+            ConnectWithDevice(macAddress);
+            binding.textViewShopName.setText(inputString);
 
-            AlertDialog alert = builder.create();
-            alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            alert.show();
-
-            AppCompatButton buttonClose = alertDialog.findViewById(R.id.buttonClose);
-            TextView textView = alertDialog.findViewById(R.id.textViewResult);
-            textView.setText(binding.textViewTotal.getText().toString());
-            buttonClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    SendToBoard(textView.getText().toString());
-                    alert.dismiss();
-                }
-            });
-        } else {
-            Toast.makeText(this, "Error!!!", Toast.LENGTH_SHORT).show();
-        }
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setCancelable(false);
+//            LayoutInflater inflater = this.getLayoutInflater();
+//            View alertDialog = inflater.inflate(R.layout.custom_complete_dialog, null);
+//            builder.setView(alertDialog);
+//
+//            AlertDialog alert = builder.create();
+//            alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+//            alert.show();
+//
+//            AppCompatButton buttonClose = alertDialog.findViewById(R.id.buttonClose);
+//            TextView textView = alertDialog.findViewById(R.id.textViewResult);
+//            textView.setText(binding.textViewTotal.getText().toString());
+//            buttonClose.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    alert.dismiss();
+//                }
+//            });
     });
 
 //    public void ConnectWithDevice(String device) {
@@ -188,6 +220,16 @@ public class CartActivity extends BaseActivity {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static String extractMACAddress(String input) {
+        Pattern pattern = Pattern.compile("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group();
+        } else {
+            return null;
         }
     }
 

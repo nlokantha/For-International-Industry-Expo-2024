@@ -52,11 +52,52 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_margin="16sp" />
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp">
+
+                <TextView
+                    android:id="@+id/textViewShopNametext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shop Name"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/textViewShopName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="N/A"
+                    android:textColor="@color/green"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.appcompat.widget.AppCompatButton
+                style="@android:style/Widget.Button"
+                android:id="@+id/buttonScan"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="34dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scan"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:background="@drawable/green_bg"
+                android:textStyle="bold"/>
+
+
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -75,7 +116,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/grey_bg_full_co"
                     android:ems="10"
-                    android:hint="Enter Your Coupon"
+                    android:hint="Enter Your Amount"
                     android:inputType="text"
                     android:paddingStart="8dp"
                     android:textColor="@color/green"
@@ -99,7 +140,7 @@
                 android:layout_margin="24dp">
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/textView55"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Subtotal"
@@ -110,7 +151,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/textViewSubTotal"
+                    android:id="@+id/textViewSubtotal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$0"
@@ -129,7 +170,7 @@
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView5" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView55" />
 
                 <TextView
                     android:id="@+id/textView10"
